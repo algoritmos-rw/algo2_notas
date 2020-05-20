@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 gspread = "==0.2.*"
-httplib2 = "==0.17.*"
+httplib2 = "==0.18.*"
 oauth2client = "~=4.1"
 webargs = "~=5.0"
 flask = "~=1.1"
