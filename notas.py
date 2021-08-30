@@ -21,7 +21,7 @@ def get_sheet(worksheet_name):
 
     Utiliza la constante global SPREADSHEET_KEY.
     """
-    client = gspread.authorize(notas_oauth.get_credenciales())
+    client = gspread.authorize(notas_oauth.get_credenciales_spreadsheet())
     spreadsheet = client.open_by_key(SPREADSHEET_KEY)
     return spreadsheet.worksheet(worksheet_name)
 
