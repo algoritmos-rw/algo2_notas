@@ -13,7 +13,7 @@ from forms.authentication_form import AuthenticationForm
 
 from api.google_credentials import GoogleCredentials
 from repositories.notas_repository import NotasRepository
-from services.sendmail import EmailSender
+from services.sendmail import SendmailException, NotasEmailSender, EjercicioEmailSender
 
 # App configuration
 APP_TITLE = f'{os.environ["NOTAS_COURSE_NAME"]} - Consulta de Notas'
@@ -41,9 +41,15 @@ app.secret_key = SECRET_KEY
 app.config.title = APP_TITLE
 app.template_folder = TEMPLATES_DIR
 
-google_credentials = GoogleCredentials(SERVICE_ACCOUNT_JSON, CLIENT_ID, CLIENT_SECRET, OAUTH_REFRESH)
+google_credentials = GoogleCredentials(
+    SERVICE_ACCOUNT_JSON, CLIENT_ID, CLIENT_SECRET, OAUTH_REFRESH)
 notas = NotasRepository(SPREADSHEET_KEY, google_credentials)
-emails = EmailSender(COURSE, ACCOUNT, google_credentials)
+notas_email_sender = NotasEmailSender(google_credentials, COURSE, ACCOUNT)
+ejercicios_email_sender = EjercicioEmailSender(
+    google_credentials, COURSE, ACCOUNT)
+
+# Endpoints
+
 
 @app.route("/", methods=('GET', 'POST'))
 def index():
@@ -60,8 +66,9 @@ def index():
                 "La dirección de mail no está asociada a ese padrón", "danger")
         else:
             try:
-                EmailSender.sendmail(emails, app.config.title, email, genlink(padron))
-            except EmailSender.SendmailException as e:
+                notas_email_sender.sendmail(
+                    email, curso=COURSE, enlace=genlink(padron))
+            except SendmailException as e:
                 return flask.render_template("error.html", message=str(e))
             else:
                 return flask.render_template("email_sent.html", email=email)
@@ -93,6 +100,30 @@ def consultar(args):
         return flask.render_template("error.html", message=str(e))
     else:
         return flask.render_template("result.html", items=notas_alumno)
+
+
+@app.route("/test", methods=['GET'])
+def test_route():
+    """Modo de uso: http://ip:5000/test?email=test@email.com """
+
+    email = flask.request.args.get("email")
+    corrector = "Fulano de tal"
+    correcciones = """¡Felicitaciones!
+El código en general está muy prolijo, y los tests están bien. Hay un par de asserts más que se podían haber hecho después de cada paso pero los agregué y pasaron así que está todo bien. Igualmente intenten poner todos los asserts intermedios porque si no les puede pasar que códigos incorrectos los pasen. Les dejo dos cositas:
+La primera es que entre las dos cintas, y entre los dos extractores, les quedó prácticamente todo el código repetido. Lo correcto era usar prototipado para poder reciclar la implementación de la CintaA para la B, y del extractor de hierro en el de carbón (esta no baja puntos).
+La segunda, que es un detalle, hay algunas implementaciones donde los nombres de los colaboradores no indican el rol que tiene que cumplir dentro de la implementación. Por ejemplo: el mensaje “agregar: anArray” sería más declarativo si se llamara “agregar: contenido”, por ejemplo. No tengan miedo de ser un poquito redundantes, a veces es preferible, o es un indicador de que el nombre del mensaje está mal. Por ejemplo: “agregarContenido: contenido” es redundante por esta razón.
+¡Hasta la próxima entrega!
+"""
+
+    try:
+        ejercicios_email_sender.send_mail(
+            to_addr=email, curso=COURSE, ejercicio="Factorio",
+            grupo=22, corrector=corrector, nota=8, correcciones=correcciones)
+    except SendmailException as e:
+        return flask.render_template("error.html", message=str(e))
+    else:
+        return flask.render_template("email_sent.html", email=email)
+
 
 def genlink(padron: str) -> str:
     """Devuelve el enlace de consulta para un padrón.
