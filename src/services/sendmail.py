@@ -53,7 +53,7 @@ class EmailSender(ABC):
         server.close()
 
 
-class NotasEmailSender(EmailSender):
+class SigninEmailSender(EmailSender):
     subject = "Enlace para consultar las notas"
     template = """
 Este es el link para consultar tus notas:
