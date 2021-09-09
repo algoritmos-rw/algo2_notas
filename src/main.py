@@ -13,7 +13,7 @@ from forms.authentication_form import AuthenticationForm
 
 from api.google_credentials import GoogleCredentials
 from repositories.notas_repository import NotasRepository
-from services.sendmail import SendmailException, NotasEmailSender, EjercicioEmailSender
+from services.sendmail import SendmailException, SigninEmailSender, EjercicioEmailSender
 
 # App configuration
 APP_TITLE = f'{os.environ["NOTAS_COURSE_NAME"]} - Consulta de Notas'
@@ -44,7 +44,7 @@ app.template_folder = TEMPLATES_DIR
 google_credentials = GoogleCredentials(
     SERVICE_ACCOUNT_JSON, CLIENT_ID, CLIENT_SECRET, OAUTH_REFRESH)
 notas = NotasRepository(SPREADSHEET_KEY, google_credentials)
-notas_email_sender = NotasEmailSender(google_credentials, COURSE, ACCOUNT)
+signin_email_sender = SigninEmailSender(google_credentials, COURSE, ACCOUNT)
 ejercicios_email_sender = EjercicioEmailSender(
     google_credentials, COURSE, ACCOUNT)
 
@@ -66,7 +66,7 @@ def index():
                 "La dirección de mail no está asociada a ese padrón", "danger")
         else:
             try:
-                notas_email_sender.sendmail(
+                signin_email_sender.sendmail(
                     email, curso=COURSE, enlace=genlink(padron))
             except SendmailException as e:
                 return flask.render_template("error.html", message=str(e))
@@ -102,8 +102,8 @@ def consultar(args):
         return flask.render_template("result.html", items=notas_alumno)
 
 
-@app.route("/test", methods=['GET'])
-def test_route():
+@app.route("/sendgrades", methods=['POST'])
+def send_grades_endpoint():
     """Modo de uso: http://ip:5000/test?email=test@email.com """
 
     email = flask.request.args.get("email")
