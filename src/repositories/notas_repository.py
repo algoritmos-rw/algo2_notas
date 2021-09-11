@@ -1,12 +1,29 @@
 from __future__ import annotations
+import collections
 
 import gspread
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple, Callable, NamedTuple
+from dataclasses import dataclass
+
 if TYPE_CHECKING:
-    from typing import Tuple, List
-    from gspread.models import Worksheet
+    from typing import List
+    from gspread.models import Worksheet, Cell
     from api.google_credentials import GoogleCredentials
+
+
+Grupo2 = NamedTuple('Grupo', [("numero", int), ("corrector", str), (
+    "emails", Tuple[str, str]), ("nota", str), ("correciones", str)])
+
+
+@dataclass
+class Grupo:
+    numero: int
+    corrector: str
+    emails: Tuple[str, str]
+    nota: str
+    correcciones: str
+
 
 class NotasRepository:
     # Constantes
@@ -58,3 +75,37 @@ class NotasRepository:
                 return list(zip(headers, alumno))
 
         raise IndexError(f"Padrón {padron} no encontrado")
+
+    def _get_groups_from_cell_range(self, rango: List[str]):
+        first_cell = rango[0]
+        last_cell = rango[-1]
+
+        columns = last_cell.col - first_cell.col + 1
+
+        matrix_to_list_index: Callable[[int, int],
+                                       int] = lambda row, col: row * columns + col
+        valores = [i.value.strip() for i in rango]
+        grupos = []
+        for i in range(columns // 2):
+            col = 2 * i
+            grupo = Grupo(
+                numero=int(valores[matrix_to_list_index(0, col)]),
+                corrector=valores[matrix_to_list_index(0, col + 1)],
+                emails=(
+                    valores[matrix_to_list_index(1, col)],
+                    valores[matrix_to_list_index(1, col + 1)],
+                ),
+                nota=valores[matrix_to_list_index(2, col)],
+                correcciones=valores[matrix_to_list_index(3, col)]
+            )
+            grupos.append(grupo)
+
+        return grupos
+
+    def ejercicios(self, ejercicio: str) -> List[Grupo]:
+        sheet = self._get_sheet(ejercicio)
+        named_interval = "emails" + \
+            ''.join([word.capitalize() for word in ejercicio.split()])
+        rango = sheet.range(named_interval)
+
+        return self._get_groups_from_cell_range(rango)
