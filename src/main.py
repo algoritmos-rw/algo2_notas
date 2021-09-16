@@ -4,6 +4,7 @@
 import os
 
 import flask
+import json
 import itsdangerous
 
 from webargs import fields
@@ -116,19 +117,30 @@ def send_grades_endpoint():
     # gspread.exceptions.WorksheetNotFound
     # gspread.exceptions.APIError ({'code': 400, 'message': "Unable to parse range:  {WORKSHEET}!{CELL_RANGE}", 'status': 'INVALID_ARGUMENT'})
 
-    for grupo in notas.ejercicios(ejercicio):
-        for email in grupo.emails:
-            try:
-                email_sender.send_mail(
-                    template_path="emails/notas_ejercicio.html",
-                    subject=f"Correccion de notas ejercicio {ejercicio} - Grupo {grupo.numero}", to_addr=email,
-                    curso=COURSE, ejercicio=ejercicio,
-                    grupo=grupo.numero, corrector=grupo.corrector,
-                    nota=grupo.nota, correcciones=grupo.correcciones)
-            except SendmailException as e:
-                return flask.render_template("error.html", message=str(e))
+    def generator():
+        for grupo in notas.ejercicios(ejercicio):
+            for email in grupo.emails:
+                try:
+                    email_sender.send_mail(
+                        template_path="emails/notas_ejercicio.html",
+                        subject=f"Correccion de notas ejercicio {ejercicio} - Grupo {grupo.numero}", to_addr=email,
+                        curso=COURSE, ejercicio=ejercicio,
+                        grupo=grupo.numero, corrector=grupo.corrector,
+                        nota=grupo.nota, correcciones=grupo.correcciones)
+                    yield json.dumps({
+                        "email": email,
+                        "message_sent": True,
+                        "error": None
+                    }) + "\n"
+                except SendmailException as e:
+                    yield json.dumps({
+                        "email": email,
+                        "message_sent": False,
+                        "error": str(e)
+                    }) + "\n"
+                    return
                 
-    return flask.render_template("email_sent.html", email=email)
+    return app.response_class(generator(), mimetype="text/plain")
 
 
 def genlink(padron: str) -> str:
