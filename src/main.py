@@ -105,16 +105,17 @@ def consultar(args):
     else:
         return flask.render_template("result.html", items=notas_alumno)
 
-
-@app.route('/test')
-def test_route():
-
-    return flask.jsonify(notas.ejercicios("Copy of Factorio"))
-
-
 @app.route("/send-grades", methods=['GET'])
 def send_grades_endpoint():
-    ejercicio = "Copy of Factorio"
+    ejercicio = flask.request.args.get("ejercicio")
+    if ejercicio == None:
+        # TODO: improve
+        return 'error'
+
+    # Posibles errores
+    # gspread.exceptions.WorksheetNotFound
+    # gspread.exceptions.APIError ({'code': 400, 'message': "Unable to parse range:  {WORKSHEET}!{CELL_RANGE}", 'status': 'INVALID_ARGUMENT'})
+
     for grupo in notas.ejercicios(ejercicio):
         for email in grupo.emails:
             try:
@@ -126,6 +127,7 @@ def send_grades_endpoint():
                     nota=grupo.nota, correcciones=grupo.correcciones)
             except SendmailException as e:
                 return flask.render_template("error.html", message=str(e))
+                
     return flask.render_template("email_sent.html", email=email)
 
 
