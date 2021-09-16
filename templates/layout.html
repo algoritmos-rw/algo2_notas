@@ -8,28 +8,22 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
     <style>
       body {
         padding-top: 50px;
-        font: 14px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font: 14px/1.8 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
+      
       .content {
         padding: 40px 15px;
       }
+      
       .table {
         max-width: 30em;
       }
-      .border-footer {
-        border-top: 0.1px solid rgb(189, 189, 189);
-      }
-      .footer-link :hover {
-        text-decoration: none;
-        color: black;
-      }
-      .footer-link{
-        text-decoration: none;
-        color: black;
-      }
+      
     </style>
   {% endblock %}
 </head>
@@ -42,31 +36,29 @@
     </div>
   </div>
 
-  <div class="container">
+  <div class="container site-container">
     <div class="content">
       {% block content %}{% endblock %}
     </div>
   </div>
 
-  <script
-   src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
-
-  <footer class="pt-5 mt-auto mb-4 border-footer">
-    <div class="container d-flex flex-row justify-content-between">
-      <div>
-        <a class="footer-link" href="https://algoritmos-iii.github.io/">
-          <h6 class="fw-bold pt-1"> Algoritmos III</h6>
-        </a>
-        <p class="text-muted fw-bold ps-1">Algoritmos III</p>
+  <footer class="site-footer pt-1 mt-auto mb-4 border-footer">
+    <div class="container justify-content-between info">
+      <div class="row">
+        <div class="col">
+          <h2 class="footer-heading"><a href="https://algoritmos-iii.github.io/" class="footer-link">Algoritmos III</a></h2>
+          <p class="text-muted sub">Algoritmos III</p>
+        </div>
+        <div class="col">
+          <p class="text-muted sub desc">Sitio web del curso Leveroni de Algoritmos y Programación 3 (7507/9502)</p>
+        </div>
       </div>
-      <div>
-        <p class="text-muted">Sitio web de notas del curso Leveroni de </br> Algoritmos y Programación 3 (7507/9502)</p>
-      </div>
-    </div>
+  </div>
   </footer>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
 
 </body>
 </html>
