@@ -8,7 +8,7 @@ from email.utils import formatdate
 from jinja2 import Environment
 from contextlib import contextmanager
 
-from api.google_credentials import GoogleCredentials
+from ..api.google_credentials import GoogleCredentials
 
 SendmailException = smtplib.SMTPException
 

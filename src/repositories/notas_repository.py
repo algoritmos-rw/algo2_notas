@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Tuple, Callable, NamedTuple
 from dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import List
-    from gspread.models import Worksheet, Cell
-    from api.google_credentials import GoogleCredentials
+    from typing import Tuple, List
+    from gspread.models import Worksheet
+    from ..api.google_credentials import GoogleCredentials
 
 
 Grupo2 = NamedTuple('Grupo', [("numero", int), ("corrector", str), (
