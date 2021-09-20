@@ -16,7 +16,7 @@ from .forms.authentication_form import AuthenticationForm
 
 from .api.google_credentials import GoogleCredentials
 from .repositories.notas_repository import NotasRepository
-from .services.sendmail import EmailSender
+from .services.sendmail import EmailSender, SendmailException
 
 dotenv.load_dotenv()
 
