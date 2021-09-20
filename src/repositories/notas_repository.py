@@ -1,22 +1,24 @@
 from __future__ import annotations
-import collections
+from re import split
 
 import gspread
 
-from typing import TYPE_CHECKING, Tuple, Callable, NamedTuple
+from typing import TYPE_CHECKING, Tuple, Callable
 from dataclasses import dataclass
 
 if TYPE_CHECKING:
     from typing import Tuple, List
     from gspread.models import Worksheet
     from ..api.google_credentials import GoogleCredentials
+
+
 @dataclass
 class Grupo:
     numero: int
     corrector: str
     emails: Tuple[str, str]
     nota: str
-    correcciones: str
+    detalle: str
 
 
 class NotasRepository:
@@ -28,17 +30,25 @@ class NotasRepository:
     SHEET_NOTAS: str = "Alumnos - Notas"
     RANGO_NOTAS: str = "1:26"
 
+    SHEET_DEVOLUCIONES: str = "Devoluciones"
+    PREFIJO_RANGO_DEVOLUCIONES: str = "emails"
+    RANGO_EMAILS: str = f"{PREFIJO_RANGO_DEVOLUCIONES}Grupos"
+
     def __init__(self, spreadsheet_key: str, credentials: GoogleCredentials) -> None:
         self._spreadsheet_key = spreadsheet_key
         self._google_credentials = credentials
+
+    def _get_spreadsheet(self):
+        client = gspread.authorize(
+            self._google_credentials.get_credenciales_spreadsheet())
+        spreadsheet = client.open_by_key(self._spreadsheet_key)
+        return spreadsheet
 
     def _get_sheet(self, worksheet_name: str) -> Worksheet:
         """Devuelve un objeto gspread.Worksheet.
         Utiliza la constante global SPREADSHEET_KEY.
         """
-        client = gspread.authorize(
-            self._google_credentials.get_credenciales_spreadsheet())
-        spreadsheet = client.open_by_key(self._spreadsheet_key)
+        spreadsheet = self._get_spreadsheet()
         return spreadsheet.worksheet(worksheet_name)
 
     def verificar(self, padron_web: str, email_web: str) -> bool:
@@ -71,36 +81,33 @@ class NotasRepository:
 
         raise IndexError(f"Padrón {padron} no encontrado")
 
-    def _get_groups_from_cell_range(self, rango: List[str]):
-        first_cell = rango[0]
-        last_cell = rango[-1]
+    def ejercicios(self, ejercicio: str) -> List[Grupo]:
+        sheet = self._get_sheet(self.SHEET_DEVOLUCIONES)
+        exercise_named_interval = self.PREFIJO_RANGO_DEVOLUCIONES + \
+            ''.join([word.capitalize() for word in ejercicio.split()])
 
-        columns = last_cell.col - first_cell.col + 1
+        emails, correcciones = sheet.batch_get(
+            [f"{self.RANGO_EMAILS}", exercise_named_interval], major_dimension="COLUMNS")
 
-        matrix_to_list_index: Callable[[int, int],
-                                       int] = lambda row, col: row * columns + col
-        valores = [i.value.strip() for i in rango]
-        grupos = []
-        for i in range(columns // 2):
-            col = 2 * i
-            grupo = Grupo(
-                numero=int(valores[matrix_to_list_index(0, col)]),
-                corrector=valores[matrix_to_list_index(0, col + 1)],
-                emails=(
-                    valores[matrix_to_list_index(1, col)],
-                    valores[matrix_to_list_index(1, col + 1)],
-                ),
-                nota=valores[matrix_to_list_index(2, col)],
-                correcciones=valores[matrix_to_list_index(3, col)]
+        headers = [*emails.pop(0), *correcciones.pop(0)]
+        headers_len = len(headers)
+        amount_of_students = len(emails)
+
+        raw_data = [[
+            *emails[i],
+            *correcciones[i],
+            *[""] * (headers_len - len(emails[i]) - len(correcciones[i]))
+        ] for i in range(amount_of_students)]
+
+        grupos = [
+            Grupo(
+                numero=g[0],
+                emails=g[1].split(","),
+                nota=g[2],
+                corrector=g[3],
+                detalle=g[4]
             )
-            grupos.append(grupo)
+            for g in raw_data
+        ]
 
         return grupos
-
-    def ejercicios(self, ejercicio: str) -> List[Grupo]:
-        sheet = self._get_sheet(ejercicio)
-        named_interval = "emails" + \
-            ''.join([word.capitalize() for word in ejercicio.split()])
-        rango = sheet.range(named_interval)
-
-        return self._get_groups_from_cell_range(rango)
