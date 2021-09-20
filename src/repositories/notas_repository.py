@@ -61,7 +61,7 @@ class NotasRepository:
 
     def notas(self, padron: str) -> List[Tuple[str, str]]:
         notas = self._get_sheet(self.SHEET_NOTAS)
-        filas = notas.get_values(RANGO_NOTAS, major_dimension="COLUMNS")
+        filas = notas.get_values(self.RANGO_NOTAS, major_dimension="COLUMNS")
         headers = filas.pop(0)
         idx_padron = headers.index(self.COL_PADRON)
 
