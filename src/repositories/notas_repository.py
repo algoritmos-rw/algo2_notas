@@ -10,12 +10,6 @@ if TYPE_CHECKING:
     from typing import Tuple, List
     from gspread.models import Worksheet
     from ..api.google_credentials import GoogleCredentials
-
-
-Grupo2 = NamedTuple('Grupo', [("numero", int), ("corrector", str), (
-    "emails", Tuple[str, str]), ("nota", str), ("correciones", str)])
-
-
 @dataclass
 class Grupo:
     numero: int
