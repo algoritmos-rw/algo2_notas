@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-import json
-
 import flask
 import json
 import itsdangerous
 import dotenv
+import time
 
 from webargs import fields
 from webargs.flaskparser import use_args
@@ -48,7 +47,8 @@ app.template_folder = TEMPLATES_DIR
 jinja2_env: flask.templating.Environment = app.jinja_env
 
 service_account_credentials_info = json.loads(SERVICE_ACCOUNT_CREDENTIALS)
-google_credentials = GoogleCredentials(service_account_credentials_info, CLIENT_ID, CLIENT_SECRET, OAUTH_REFRESH)
+google_credentials = GoogleCredentials(
+    service_account_credentials_info, CLIENT_ID, CLIENT_SECRET, OAUTH_REFRESH)
 notas = NotasRepository(SPREADSHEET_KEY, google_credentials)
 
 email_sender = EmailSender(
@@ -56,7 +56,6 @@ email_sender = EmailSender(
 
 
 # Endpoints
-
 
 @app.route("/", methods=('GET', 'POST'))
 def index():
@@ -110,6 +109,7 @@ def consultar(args):
     else:
         return flask.render_template("result.html", items=notas_alumno)
 
+
 @app.route("/send-grades", methods=['GET'])
 def send_grades_endpoint():
     ejercicio = flask.request.args.get("ejercicio")
@@ -123,34 +123,42 @@ def send_grades_endpoint():
 
     def generator():
         for grupo in notas.ejercicios(ejercicio):
-            for email in grupo.emails:
-                try:
-                    email_sender.send_mail(
-                        template_path="emails/notas_ejercicio.html",
-                        subject=f"Correccion de notas ejercicio {ejercicio} - Grupo {grupo.numero}", to_addr=email,
-                        curso=COURSE, ejercicio=ejercicio,
-                        grupo=grupo.numero, corrector=grupo.corrector,
-                        nota=grupo.nota, correcciones=grupo.correcciones)
-                    yield json.dumps({
-                        "email": email,
-                        "message_sent": True,
-                        "error": None
-                    }) + "\n"
-                except SendmailException as e:
-                    yield json.dumps({
-                        "email": email,
-                        "message_sent": False,
-                        "error": str(e)
-                    }) + "\n"
-                    return
-                
+            result = {
+                "grupo": grupo.numero,
+                "emails": grupo.emails,
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+            }
+
+            try:
+                email_sender.send_mail(
+                    template_path="emails/notas_ejercicio.html",
+                    subject=f"Correccion de notas ejercicio {ejercicio} - Grupo {grupo.numero}", to_addr=grupo.emails,
+                    curso=COURSE, ejercicio=ejercicio,
+                    grupo=grupo.numero, corrector=grupo.corrector,
+                    nota=grupo.nota, correcciones=grupo.detalle)
+            except SendmailException as e:
+                result = {
+                    **result,
+                    "message_sent": False,
+                    "error": str(e)
+                }
+            else:
+                result = {
+                    **result,
+                    "message_sent": True,
+                    "error": None
+                }
+            finally:
+                grupo.mark_email_sent(json.dumps(result))
+                yield json.dumps(result) + "\n"
+
     return app.response_class(generator(), mimetype="text/plain")
 
 
 def genlink(padron: str) -> str:
     """Devuelve el enlace de consulta para un padrón.
     """
-    signed_padron = signer.dumps(padron)
+    signed_padron: str = signer.dumps(padron)
     return flask.url_for("consultar", clave=signed_padron, _external=True)
 
 

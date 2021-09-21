@@ -1,24 +1,25 @@
 from __future__ import annotations
-from re import split
-
 import gspread
+import gspread.utils
 
-from typing import TYPE_CHECKING, Tuple, Callable
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Tuple
+from dataclasses import dataclass, field
+import copy
 
 if TYPE_CHECKING:
-    from typing import Tuple, List
+    from typing import Tuple, List, Callable
     from gspread.models import Worksheet
     from ..api.google_credentials import GoogleCredentials
 
 
 @dataclass
 class Grupo:
-    numero: int
-    corrector: str
+    numero: str
     emails: Tuple[str, str]
-    nota: str
-    detalle: str
+    corrector: str = field(repr=False)
+    nota: str = field(repr=False)
+    detalle: str = field(repr=False)
+    mark_email_sent: Callable[[str], None]
 
 
 class NotasRepository:
@@ -30,8 +31,8 @@ class NotasRepository:
     SHEET_NOTAS: str = "Alumnos - Notas"
     RANGO_NOTAS: str = "1:26"
 
-    SHEET_DEVOLUCIONES: str = "Devoluciones"
-    PREFIJO_RANGO_DEVOLUCIONES: str = "emails"
+    SHEET_DEVOLUCIONES: str = "Copy of Devoluciones"
+    PREFIJO_RANGO_DEVOLUCIONES: str = "testemail"
     RANGO_EMAILS: str = f"{PREFIJO_RANGO_DEVOLUCIONES}Grupos"
 
     def __init__(self, spreadsheet_key: str, credentials: GoogleCredentials) -> None:
@@ -82,32 +83,48 @@ class NotasRepository:
         raise IndexError(f"Padrón {padron} no encontrado")
 
     def ejercicios(self, ejercicio: str) -> List[Grupo]:
-        sheet = self._get_sheet(self.SHEET_DEVOLUCIONES)
         exercise_named_interval = self.PREFIJO_RANGO_DEVOLUCIONES + \
             ''.join([word.capitalize() for word in ejercicio.split()])
 
+        sheet = self._get_sheet(self.SHEET_DEVOLUCIONES)
         emails, correcciones = sheet.batch_get(
             [f"{self.RANGO_EMAILS}", exercise_named_interval], major_dimension="COLUMNS")
 
+        # Construct headers
         headers = [*emails.pop(0), *correcciones.pop(0)]
-        headers_len = len(headers)
-        amount_of_students = len(emails)
 
         raw_data = [[
             *emails[i],
             *correcciones[i],
-            *[""] * (headers_len - len(emails[i]) - len(correcciones[i]))
-        ] for i in range(amount_of_students)]
+            *[""] * (len(headers) - len(emails[i]) - len(correcciones[i]))
+        ] for i in range(len(correcciones))]
 
-        grupos = [
-            Grupo(
-                numero=g[0],
-                emails=g[1].split(","),
-                nota=g[2],
-                corrector=g[3],
-                detalle=g[4]
+        correciones_range = correcciones.range.split("!")[1]
+        # email_sent_row is zero indexed
+        email_sent_row = gspread.utils.a1_range_to_grid_range(correciones_range)[
+            'endRowIndex']
+
+        grupos = []
+        for g in filter(lambda elem: elem[1] not in ["#N/A", "#¡REF!", "", "0"], raw_data):
+            func: Callable[[int], Callable[[str], None]] = (
+                lambda group_number: (
+                    lambda value="True": sheet.update_cell(
+                        email_sent_row + 1,
+                        group_number + 1,
+                        value
+                    )
+                )
             )
-            for g in raw_data
-        ]
+
+            grupos.append(
+                Grupo(
+                    numero=g[0],
+                    emails=g[1].split(","),
+                    nota=g[2],
+                    corrector=g[3],
+                    detalle=g[4],
+                    mark_email_sent=func(int(g[0]))
+                )
+            )
 
         return grupos
