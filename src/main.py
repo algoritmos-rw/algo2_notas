@@ -149,7 +149,7 @@ def send_grades_endpoint():
                     "error": None
                 }
             finally:
-                grupo.mark_email_sent(json.dumps(result))
+                grupo.mark_email_sent("TRUE" if result["message_sent"] else "")
                 yield json.dumps(result) + "\n"
 
     return app.response_class(generator(), mimetype="text/plain")
