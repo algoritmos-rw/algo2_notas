@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 @dataclass
 class Grupo:
     numero: str
-    emails: Tuple[str, str]
+    emails: List[str]
     corrector: str = field(repr=False)
     nota: str = field(repr=False)
     detalle: str = field(repr=False)
