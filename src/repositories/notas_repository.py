@@ -105,7 +105,8 @@ class NotasRepository:
             'endRowIndex']
 
         grupos = []
-        for g in filter(lambda elem: elem[1] not in ["#N/A", "#¡REF!", "", "0"], raw_data):
+        EMPTY_CHARS_FIELD = ["#N/A", "#¡REF!", "", "0"]
+        for g in filter(lambda elem: elem[1] not in EMPTY_CHARS_FIELD and elem[5] in EMPTY_CHARS_FIELD, raw_data):
             func: Callable[[int], Callable[[str], None]] = (
                 lambda group_number: (
                     lambda value="True": sheet.update_cell(
