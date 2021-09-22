@@ -110,7 +110,7 @@ def consultar(args):
         return flask.render_template("result.html", items=notas_alumno)
 
 
-@app.route("/send-grades", methods=['GET'])
+@app.route("/send-grades", methods=['POST'])
 def send_grades_endpoint():
     ejercicio = flask.request.args.get("ejercicio")
     if ejercicio == None:
