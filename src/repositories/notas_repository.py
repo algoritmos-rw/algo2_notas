@@ -4,7 +4,6 @@ import gspread.utils
 
 from typing import TYPE_CHECKING, Tuple
 from dataclasses import dataclass, field
-import copy
 
 if TYPE_CHECKING:
     from typing import Tuple, List, Callable
