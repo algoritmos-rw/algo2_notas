@@ -76,8 +76,8 @@ def index():
                     template_path="emails/sign_in.html",
                     subject="Enlace para consultar las notas", to_addr=email,
                     curso=COURSE, enlace=genlink(padron))
-            except SendmailException as e:
-                return flask.render_template("error.html", message=str(e))
+            except SendmailException as exception:
+                return flask.render_template("error.html", message=str(exception))
             else:
                 return flask.render_template("email_sent.html", email=email)
 
@@ -104,8 +104,8 @@ def _clave_validate(clave) -> bool:
 def consultar(args):
     try:
         notas_alumno = notas.notas(signer.loads(args["clave"]))
-    except IndexError as e:
-        return flask.render_template("error.html", message=str(e))
+    except IndexError as exception:
+        return flask.render_template("error.html", message=str(exception))
     else:
         return flask.render_template("result.html", items=notas_alumno)
 
@@ -136,11 +136,11 @@ def send_grades_endpoint():
                     curso=COURSE, ejercicio=ejercicio,
                     grupo=grupo.numero, corrector=grupo.corrector,
                     nota=grupo.nota, correcciones=grupo.detalle)
-            except SendmailException as e:
+            except SendmailException as exception:
                 result = {
                     **result,
                     "message_sent": False,
-                    "error": str(e)
+                    "error": str(exception)
                 }
             else:
                 result = {
