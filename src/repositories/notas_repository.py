@@ -21,22 +21,36 @@ class Grupo:
     mark_email_sent: Callable[[str], None] = field(repr=False)
 
 
-class NotasRepository:
-    # Constantes
-    SHEET_ALUMNOS: str = "Listado"
-    COL_EMAIL: str = "E-Mail"
-    COL_PADRON: str = "Padrón"
+@dataclass(frozen=True)
+class NotasRepositoryConfig:
+    sheet_alumnos: str  # Ej: "Listado"
+    col_email: str  # Ej: "E-Mail"
+    col_padron: str  # Ej: "Padrón"
 
-    SHEET_NOTAS: str = "Alumnos - Notas"
+    sheet_notas: str  # Ej: "Alumnos - Notas"
+
+    sheet_devoluciones: str  # Ej: "Devoluciones"
+    prefijo_rango_devoluciones: str  # Ej: "emails"
+    rango_emails: str  # Ej: "emailsGrupos"
+
+
+class NotasRepository:
     RANGO_NOTAS: str = "1:26"
 
-    SHEET_DEVOLUCIONES: str = "Copy of Devoluciones"
-    PREFIJO_RANGO_DEVOLUCIONES: str = "testemail"
-    RANGO_EMAILS: str = f"{PREFIJO_RANGO_DEVOLUCIONES}Grupos"
-
-    def __init__(self, spreadsheet_key: str, credentials: GoogleCredentials) -> None:
+    def __init__(self, config: NotasRepositoryConfig, spreadsheet_key: str, credentials: GoogleCredentials) -> None:
         self._spreadsheet_key = spreadsheet_key
         self._google_credentials = credentials
+
+        # Config
+        self.SHEET_ALUMNOS = config.sheet_alumnos
+        self.COL_EMAIL = config.col_email
+        self.COL_PADRON = config.col_padron
+
+        self.SHEET_NOTAS = config.sheet_notas
+
+        self.SHEET_DEVOLUCIONES = config.sheet_devoluciones
+        self.PREFIJO_RANGO_DEVOLUCIONES = config.prefijo_rango_devoluciones
+        self.RANGO_EMAILS = config.rango_emails
 
     def _get_spreadsheet(self):
         client = gspread.authorize(
