@@ -11,14 +11,14 @@ if TYPE_CHECKING:
     from ..api.google_credentials import GoogleCredentials
 
 
-@dataclass
+@dataclass(frozen=True)
 class Grupo:
     numero: str
     emails: List[str]
     corrector: str = field(repr=False)
     nota: str = field(repr=False)
     detalle: str = field(repr=False)
-    mark_email_sent: Callable[[str], None]
+    mark_email_sent: Callable[[str], None] = field(repr=False)
 
 
 class NotasRepository:
