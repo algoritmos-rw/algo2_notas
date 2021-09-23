@@ -14,7 +14,7 @@ from webargs.flaskparser import use_args
 from .forms.authentication_form import AuthenticationForm
 
 from .api.google_credentials import GoogleCredentials
-from .repositories.notas_repository import NotasRepository
+from .repositories.notas_repository import NotasRepository, NotasRepositoryConfig
 from .services.sendmail import EmailSender, SendmailException
 
 dotenv.load_dotenv()
@@ -22,8 +22,7 @@ dotenv.load_dotenv()
 # App configuration
 APP_TITLE = f'{os.environ["NOTAS_COURSE_NAME"]} - Consulta de Notas'
 SECRET_KEY = os.environ["NOTAS_SECRET"]
-assert SECRET_KEY
-TEMPLATES_DIR = "../templates"
+TEMPLATES_DIR = os.environ.get("TEMPLATE_DIR", "../templates")
 
 # Notas
 SPREADSHEET_KEY = os.environ["NOTAS_SPREADSHEET_KEY"]
@@ -38,6 +37,17 @@ SERVICE_ACCOUNT_CREDENTIALS = os.environ["NOTAS_SERVICE_ACCOUNT_CREDENTIALS"]
 COURSE = os.environ['NOTAS_COURSE_NAME']
 ACCOUNT = os.environ['NOTAS_ACCOUNT']
 
+# Notas repository config
+SHEET_ALUMNOS: str = "Listado"
+COL_EMAIL: str = "E-Mail"
+COL_PADRON: str = "Padrón"
+SHEET_NOTAS: str = "Alumnos - Notas"
+SHEET_DEVOLUCIONES: str = "Devoluciones"
+PREFIJO_RANGO_DEVOLUCIONES: str = "emails"
+RANGO_EMAILS: str = "emailsGrupos"
+
+
+# Inicialización de objetos
 signer = itsdangerous.URLSafeSerializer(SECRET_KEY)
 
 app = flask.Flask(__name__)
@@ -48,11 +58,32 @@ jinja2_env: flask.templating.Environment = app.jinja_env
 
 service_account_credentials_info = json.loads(SERVICE_ACCOUNT_CREDENTIALS)
 google_credentials = GoogleCredentials(
-    service_account_credentials_info, CLIENT_ID, CLIENT_SECRET, OAUTH_REFRESH)
-notas = NotasRepository(SPREADSHEET_KEY, google_credentials)
+    service_account_data=service_account_credentials_info,
+    client_id=CLIENT_ID,
+    client_secret=CLIENT_SECRET,
+    oauth_refesh_token=OAUTH_REFRESH
+)
+
+notas = NotasRepository(
+    config=NotasRepositoryConfig(
+        sheet_alumnos=SHEET_ALUMNOS,
+        col_email=COL_EMAIL,
+        col_padron=COL_PADRON,
+        sheet_notas=SHEET_NOTAS,
+        sheet_devoluciones=SHEET_DEVOLUCIONES,
+        prefijo_rango_devoluciones=PREFIJO_RANGO_DEVOLUCIONES,
+        rango_emails=RANGO_EMAILS
+    ),
+    spreadsheet_key=SPREADSHEET_KEY,
+    credentials=google_credentials
+)
 
 email_sender = EmailSender(
-    jinja2_env, google_credentials, COURSE, ACCOUNT)
+    jinja2_env=jinja2_env,
+    google_credentials=google_credentials,
+    from_name=COURSE,
+    from_email=ACCOUNT
+)
 
 
 # Endpoints
