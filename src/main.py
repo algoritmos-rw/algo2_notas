@@ -45,6 +45,7 @@ SHEET_NOTAS: str = "Alumnos - Notas"
 SHEET_DEVOLUCIONES: str = "Devoluciones"
 PREFIJO_RANGO_DEVOLUCIONES: str = "emails"
 RANGO_EMAILS: str = "emailsGrupos"
+RANGO_NOTAS: str = "1:26"
 
 
 # Inicialización de objetos
@@ -72,7 +73,8 @@ notas = NotasRepository(
         sheet_notas=SHEET_NOTAS,
         sheet_devoluciones=SHEET_DEVOLUCIONES,
         prefijo_rango_devoluciones=PREFIJO_RANGO_DEVOLUCIONES,
-        rango_emails=RANGO_EMAILS
+        rango_emails=RANGO_EMAILS,
+        rango_notas=RANGO_NOTAS
     ),
     spreadsheet_key=SPREADSHEET_KEY,
     credentials=google_credentials

@@ -32,10 +32,11 @@ class NotasRepositoryConfig:
     sheet_devoluciones: str  # Ej: "Devoluciones"
     prefijo_rango_devoluciones: str  # Ej: "emails"
     rango_emails: str  # Ej: "emailsGrupos"
+    rango_notas: str # Ej: "1:26"
 
 
 class NotasRepository:
-    RANGO_NOTAS: str = "1:26"
+    
 
     def __init__(self, config: NotasRepositoryConfig, spreadsheet_key: str, credentials: GoogleCredentials) -> None:
         self._spreadsheet_key = spreadsheet_key
@@ -51,6 +52,7 @@ class NotasRepository:
         self.SHEET_DEVOLUCIONES = config.sheet_devoluciones
         self.PREFIJO_RANGO_DEVOLUCIONES = config.prefijo_rango_devoluciones
         self.RANGO_EMAILS = config.rango_emails
+        self.RANGO_NOTAS = config.rango_notas
 
     def _get_spreadsheet(self):
         client = gspread.authorize(
