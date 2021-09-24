@@ -22,7 +22,7 @@ dotenv.load_dotenv()
 # App configuration
 APP_TITLE = f'{os.environ["NOTAS_COURSE_NAME"]} - Consulta de Notas'
 SECRET_KEY = os.environ["NOTAS_SECRET"]
-TEMPLATES_DIR = os.environ.get("TEMPLATE_DIR", "../templates")
+TEMPLATES_DIR = "../templates"
 
 # Notas
 SPREADSHEET_KEY = os.environ["NOTAS_SPREADSHEET_KEY"]
