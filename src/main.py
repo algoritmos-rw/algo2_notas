@@ -64,7 +64,7 @@ google_credentials = GoogleCredentials(
     service_account_data=service_account_credentials_info,
     client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,
-    oauth_refesh_token=OAUTH_REFRESH
+    oauth_refresh_token=OAUTH_REFRESH
 )
 
 notas = NotasRepository(
