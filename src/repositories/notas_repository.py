@@ -32,11 +32,10 @@ class NotasRepositoryConfig:
     sheet_devoluciones: str  # Ej: "Devoluciones"
     prefijo_rango_devoluciones: str  # Ej: "emails"
     rango_emails: str  # Ej: "emailsGrupos"
-    rango_notas: str # Ej: "1:26"
+    rango_notas: str  # Ej: "1:26"
 
 
 class NotasRepository:
-    
 
     def __init__(self, config: NotasRepositoryConfig, spreadsheet_key: str, credentials: GoogleCredentials) -> None:
         self._spreadsheet_key = spreadsheet_key
@@ -130,9 +129,9 @@ class NotasRepository:
             func: Callable[[int], Callable[[str], None]] = (
                 lambda group_number: (
                     lambda value="True": sheet.update_cell(
-                        email_sent_row + 1,
-                        group_number + 1,
-                        value
+                        row=email_sent_row,
+                        col=group_number + 1,
+                        value=value
                     )
                 )
             )
