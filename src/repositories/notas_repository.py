@@ -106,12 +106,17 @@ class NotasRepository:
             [f"{self.RANGO_EMAILS}", exercise_named_interval], major_dimension="COLUMNS")
 
         # Construct headers
-        headers = [*emails.pop(0), *correcciones.pop(0)]
+        email_headers = emails.pop(0)
+        correciones_headers = correcciones.pop(0)
 
         raw_data = [[
             *emails[i],
+            *[""] * (len(email_headers) - len(emails[i])),
             *correcciones[i],
-            *[""] * (len(headers) - len(emails[i]) - len(correcciones[i]))
+            *[""] * (
+                (len(email_headers) + len(correciones_headers)) -
+                (len(emails[i]) + len(correcciones[i]))
+            )
         ] for i in range(len(correcciones))]
 
         correciones_range = correcciones.range.split("!")[1]
