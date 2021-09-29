@@ -126,7 +126,7 @@ def index():
             else:
                 return flask.render_template("email_sent.html", email=email)
 
-    return flask.render_template("index.html", form=form)
+    return flask.render_template("wip.html", form=form)
 
 
 @app.errorhandler(422)
