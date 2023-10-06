@@ -45,6 +45,23 @@ def verificar(padron_web, email_web):
     return False
 
 
+def eliminar_columnas_comentadas(headers, alumno):
+    comentadas = []
+    for i in range(len(headers)):
+        if headers[i][0] == "_":
+            comentadas.append(i)
+    cant_ya_eliminadas = 0
+
+    resul_headers = headers[:]
+    resul_alumno = alumno[:]
+    for col_comentada in comentadas:
+        resul_headers.pop(col_comentada - cant_ya_eliminadas)
+        resul_alumno.pop(col_comentada - cant_ya_eliminadas)
+        cant_ya_eliminadas += 1
+    return resul_headers, resul_alumno
+
+
+
 def notas(padron):
     notas = get_sheet(SHEET_NOTAS)
     filas = notas.get_all_values()
@@ -53,7 +70,8 @@ def notas(padron):
 
     for alumno in filas:
         if padron.lower() == alumno[idx_padron].lower():
-            return zip(headers, alumno)
+            headers_scom, alumno_scom = eliminar_columnas_comentadas(headers, alumno)
+            return zip(headers_scom, alumno_scom)
 
     raise IndexError("Padrón {} no encontrado".format(padron))
 
