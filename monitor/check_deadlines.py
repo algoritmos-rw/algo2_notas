@@ -219,11 +219,11 @@ def evaluate_rule(descripcion: str, alumnos: list[Alumno]) -> tuple[str, list[Al
         return ("Promo: pierde promoción por Hash", filt_promo(bad))
 
     if rest_n == "todo ok abb y heap":
-        bad = lambda a: not (a.entrega_ok("ABB") and a.entrega_ok("Heap"))
+        bad = lambda a: not (a.entrega_ok("Abb") and a.entrega_ok("Heap"))
         return ("Promo: pierde promoción por ABB/Heap", filt_promo(bad))
 
     if "hash" in rest_n and "abb" in rest_n and "heap" in rest_n:
-        bad = lambda a: not (a.entrega_ok("Hash") and a.entrega_ok("ABB") and a.entrega_ok("Heap"))
+        bad = lambda a: not (a.entrega_ok("Hash") and a.entrega_ok("Abb") and a.entrega_ok("Heap"))
         return ("Sin Hash/ABB/Heap OK", [a for a in alumnos if bad(a)])
 
     return ("", [])
