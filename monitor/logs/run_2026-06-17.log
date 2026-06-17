@@ -1,0 +1,55 @@
+==== notas-monitor run @ 2026-06-17T10:11:50-03:00 ====
+---- update_entregas rc=0 ----
+(skip pull: working tree con cambios locales)
+WARN: columna 'ABB' no existe en Notas (7993aeecbf464faf5ace4a4a12528e2028107eea)
+last_seen=0e4132b766 head=e83ee588ff commits_nuevos=68
+{
+  "stats": {
+    "commits_procesados": 68,
+    "commits_padron_no_encontrado": 0,
+    "commits_columna_no_encontrada": 1,
+    "celdas_actualizadas": 2,
+    "celdas_salteadas_no_vacias": 77,
+    "celdas_no_op_wip": 8
+  },
+  "actualizadas": [
+    {
+      "row": 93,
+      "col": "TP3",
+      "value": "E"
+    },
+    {
+      "row": 102,
+      "col": "TP3",
+      "value": "WIP"
+    }
+  ]
+}
+Evaluando fechas <= 2026-06-17
+---- check_deadlines rc=0 ----
+{
+  "today": "2026-06-17",
+  "findings": []
+}
+summary: 2 celda(s) actualizadas | sin incumplimientos
+notificación enviada
+==== fin @ 2026-06-17T10:16:05-03:00 ====
+==== notas-monitor run @ 2026-06-17T10:17:06-03:00 ====
+---- update_entregas rc=0 ----
+(skip pull: working tree con cambios locales)
+last_seen=e83ee588ff head=e83ee588ff commits_nuevos=0
+{
+  "stats": {
+    "commits_procesados": 0
+  },
+  "actualizadas": []
+}
+Evaluando fechas <= 2026-06-17
+---- check_deadlines rc=0 ----
+{
+  "today": "2026-06-17",
+  "findings": []
+}
+summary: 0 celda(s) actualizadas | sin incumplimientos
+notificación enviada
+==== fin @ 2026-06-17T10:17:25-03:00 ====
