@@ -6,7 +6,7 @@ Editar a mano cuando rote el cuatrimestre o el path del service account.
 import os
 
 # Planilla del cuatrimestre actual.
-SPREADSHEET_KEY = "11qjRkFp7eiz2b3lUQHqF6lCq_o5JfpINajwxIqzdTmk"
+SPREADSHEET_KEY = "1-3TLDzXwYomfqfJFiLzgQsBWiDx9l3XSpLGRDVrk-iM"
 
 # Service account JSON con acceso de edición a la planilla.
 # Editar a mano si se mueve el archivo.
@@ -24,6 +24,12 @@ REPORTS_DIR = os.path.join(MONITOR_DIR, "reports")
 SHEET_NOTAS = "Notas"
 SHEET_ALUMNOS = "DatosAlumnos"
 SHEET_CALENDARIO = "Calendario"
+SHEET_REPOS = "Repos"
+
+# Equipo de GitHub al que hay que asegurar permisos de Admin en cada repo de
+# alumno (ver github_invite.py). Se asume que vive en la misma organización
+# que el repo (owner/repo de la columna "Repo" de la hoja Repos).
+GITHUB_TEAM_SLUG = "algorw-20b"
 
 # Mapeo entrega-en-commit → header de columna en Notas.
 # Capitalize directo, salvo TPs y casos donde el header difiere.
