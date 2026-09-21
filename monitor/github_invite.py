@@ -1,8 +1,9 @@
 #!/Users/mbuchwald/Documents/Algoritmos/notas/monitor/.venv/bin/python3
 """Invita a los alumnos a su repositorio de GitHub y asegura permisos del equipo docente.
 
-Recorre la hoja `Repos` (columna D = owner/repo) y, para cada repositorio que
-exista en GitHub:
+Recorre la hoja `Repos` (columna "Repo" = owner/repo del repositorio
+individual, o columna "Repo2" = owner/repo del repositorio grupal si se pasa
+--grupal) y, para cada repositorio que exista en GitHub:
 
   1. Busca el usuario de GitHub del alumno en `DatosAlumnos` (columna F, por
      Legajo/Padrón).
@@ -12,6 +13,11 @@ exista en GitHub:
      sobre el repo. Si no lo tiene, se lo agrega.
 
 Repos inexistentes en GitHub se ignoran silenciosamente (no se crean).
+
+Con --grupal se procesa el repositorio grupal (columna "Repo2") en lugar del
+individual. Como cada integrante del grupo comparte el mismo repositorio
+grupal, el mismo repo aparece una vez por alumno del grupo; no es un problema,
+simplemente se procesa (y se invita/verifica) más de una vez.
 
 Requiere credenciales de un usuario con permisos de administración sobre la
 organización. Se piden por stdin en cada corrida (usuario + token) y NUNCA se
@@ -157,13 +163,17 @@ def load_padron_to_github() -> dict[str, str]:
     return out
 
 
-def load_repos() -> list[tuple[str, str]]:
-    """Devuelve lista de (padron, owner/repo) tal como figuran en la hoja Repos."""
+def load_repos(grupal: bool = False) -> list[tuple[str, str]]:
+    """Devuelve lista de (padron, owner/repo) tal como figuran en la hoja Repos.
+
+    Si grupal=True, usa la columna "Repo2" (repositorio grupal) en vez de
+    "Repo" (repositorio individual).
+    """
     sp = open_spreadsheet()
     rows = sp.worksheet(config.SHEET_REPOS).get_all_values()
     headers = rows[0]
     idx_padron = headers.index("Legajo")
-    idx_repo = headers.index("Repo")
+    idx_repo = headers.index("Repo2" if grupal else "Repo")
 
     out = []
     for row in rows[1:]:
@@ -229,12 +239,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true",
                          help="No modifica nada en GitHub, solo muestra qué haría")
+    parser.add_argument("-g", "--grupal", action="store_true",
+                         help="Procesa el repositorio grupal (columna Repo2) en vez del individual")
     args = parser.parse_args()
 
     session = prompt_credentials()
 
     padron_to_github = load_padron_to_github()
-    repos = load_repos()
+    repos = load_repos(grupal=args.grupal)
     print(f"{len(repos)} repos en la hoja, {len(padron_to_github)} alumnos con usuario de GitHub",
           file=sys.stderr)
 
